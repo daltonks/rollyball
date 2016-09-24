@@ -12,9 +12,4 @@ public class MasterController : MonoBehaviour
         Player.GetComponent<PlayerController>().Camera = Camera;
         Camera.GetComponent<CameraController>().Player = Player;
     }
-	
-	void Update ()
-    {
-	    
-	}
 }
