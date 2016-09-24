@@ -95,8 +95,14 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter()
+    void OnCollisionEnter(Collision collision)
     {
-        IsFalling = false;
+        foreach(ContactPoint contactPoint in collision.contacts)
+        {
+            if(contactPoint.normal.y > -.1)
+            {
+                IsFalling = false;
+            }
+        }
     }
 }

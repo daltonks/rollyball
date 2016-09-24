@@ -7,6 +7,6 @@ public class SpinnerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        transform.rotation = Quaternion.Euler(0, Time.fixedDeltaTime * Speed, 0) * transform.rotation;
+        transform.RotateAround(transform.position, transform.up, Time.fixedDeltaTime * Speed);
     }
 }
