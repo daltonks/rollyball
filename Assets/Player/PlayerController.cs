@@ -95,7 +95,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnCollisionStay()
+    void OnCollisionEnter()
     {
         IsFalling = false;
     }
