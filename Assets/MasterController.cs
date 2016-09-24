@@ -3,15 +3,14 @@ using System.Collections;
 
 public class MasterController : MonoBehaviour
 {
-    public Transform SpawnPoint;
     public GameObject PlayerPrefab, CameraPrefab;
-    public static Transform Player { get; private set; }
-    public static Transform Camera { get; private set; }
 
     void Start ()
     {
-        Camera = ((GameObject) Instantiate(CameraPrefab, SpawnPoint.transform)).transform;
-        Player = ((GameObject) Instantiate(PlayerPrefab, SpawnPoint.transform)).transform;
+        CameraController Camera = ((GameObject) Instantiate(CameraPrefab, transform.position, transform.rotation, transform)).GetComponent<CameraController>();
+        PlayerController Player = ((GameObject) Instantiate(PlayerPrefab, transform.position, transform.rotation, transform)).GetComponent<PlayerController>();
+        Player.GetComponent<PlayerController>().Camera = Camera;
+        Camera.GetComponent<CameraController>().Player = Player;
     }
 	
 	void Update ()
