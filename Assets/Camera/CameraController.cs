@@ -3,13 +3,22 @@ using System.Collections;
 
 public class CameraController : MonoBehaviour
 {
+    private Vector3 StartingLoc;
+    private Quaternion StartingRot;
     public float CameraSpeed;
     public float DistanceToPlayer, OffsetY;
     public PlayerController Player { get; set; }
 
     void Start()
     {
-        transform.position = transform.position - transform.rotation * Vector3.forward;
+        StartingLoc = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        StartingRot = new Quaternion(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+        Reset();
+    }
+
+    public void Reset()
+    {
+        transform.position = StartingLoc - StartingRot * Vector3.forward;
         LerpToPlayer(1);
     }
 

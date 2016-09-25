@@ -3,6 +3,7 @@ using System.Collections;
 
 public class MasterController : MonoBehaviour
 {
+    public float YDeath;
     public GameObject PlayerPrefab, CameraPrefab;
 
     void Start ()
@@ -10,6 +11,7 @@ public class MasterController : MonoBehaviour
         CameraController Camera = ((GameObject) Instantiate(CameraPrefab, transform.position, transform.rotation, transform)).GetComponent<CameraController>();
         PlayerController Player = ((GameObject) Instantiate(PlayerPrefab, transform.position, transform.rotation, transform)).GetComponent<PlayerController>();
         Player.GetComponent<PlayerController>().Camera = Camera;
+        Player.Master = this;
         Camera.GetComponent<CameraController>().Player = Player;
     }
 }

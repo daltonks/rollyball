@@ -7,12 +7,16 @@ public class PlayerController : MonoBehaviour
     public float MinTimeBetweenJumps;
     public float Speed;
     public float JumpSpeed;
+    public float JumpInAirMaxTime;
+    private float FallingTime = 0;
     private bool IsFalling = false;
+    private bool IsInJumpMode = false;
     private float Radius;
     private Rigidbody RigidBody;
     private Vector3[] GroundRaycastVectors, WallRaycastVectors;
     private float JumpAccum;
     public CameraController Camera { get; set; }
+    public MasterController Master { get; set; }
 
     void Start ()
     {
@@ -53,6 +57,16 @@ public class PlayerController : MonoBehaviour
 	
 	void FixedUpdate()
     {
+        if(transform.position.y <= Master.YDeath)
+        {
+            RigidBody.velocity = Vector3.zero;
+            RigidBody.angularVelocity = Vector3.zero;
+            transform.position = Master.transform.position;
+            transform.rotation = Master.transform.rotation;
+            Camera.Reset();
+            return;
+        }
+
         //Rotation
         Vector3 fromCamera = transform.position - Camera.transform.position;
         fromCamera.y = 0;
@@ -61,38 +75,79 @@ public class PlayerController : MonoBehaviour
         {
             fromCamera = Vector3.forward;
         }
-        
+
+        float tickSpeed = Speed;
+        if(  (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
+          && (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)))
+        {
+            tickSpeed *= .5f;
+        }
+
         if (Input.GetKey(KeyCode.W))
         {
-            RigidBody.AddTorque(Quaternion.Euler(0, 90, 0) * fromCamera * Speed, ForceMode.Acceleration);
+            AddMovementForces(Quaternion.identity, fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            RigidBody.AddTorque(Quaternion.Euler(0, -90, 0) * fromCamera * Speed, ForceMode.Acceleration);
+            AddMovementForces(Quaternion.Euler(0, 180, 0), fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.A))
         {
-            RigidBody.AddTorque(fromCamera * Speed, ForceMode.Acceleration);
+            AddMovementForces(Quaternion.Euler(0, -90, 0), fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.D))
         {
-            RigidBody.AddTorque(Quaternion.Euler(0, 180, 0) * fromCamera * Speed, ForceMode.Acceleration);
+            AddMovementForces(Quaternion.Euler(0, 90, 0), fromCamera, tickSpeed);
         }
 
         JumpAccum += Time.fixedDeltaTime;
-        if (Input.GetKey(KeyCode.Space) && !IsFalling && JumpAccum >= MinTimeBetweenJumps)
+        if(IsFalling)
+        {
+            if(IsInJumpMode)
+            {
+                FallingTime += Time.fixedDeltaTime;
+                if (Input.GetKey(KeyCode.Space))
+                {
+                    if(FallingTime >= JumpInAirMaxTime)
+                    {
+                        IsInJumpMode = false;
+                    }
+                    else
+                    {
+                        AddUpwardForce();
+                    }
+                }
+                else
+                {
+                    IsInJumpMode = false;
+                }
+            }
+        }
+        else if (Input.GetKey(KeyCode.Space) && JumpAccum >= MinTimeBetweenJumps)
         {
             foreach(Vector3 vec in GroundRaycastVectors)
             {
                 if(Physics.Raycast(transform.position, vec, Radius + .05f))
                 {
-                    RigidBody.AddForce(Vector3.up * JumpSpeed, ForceMode.Acceleration);
+                    AddUpwardForce();
                     JumpAccum = 0;
+                    FallingTime = 0;
                     IsFalling = true;
+                    IsInJumpMode = true;
                     break;
                 }
             }
         }
+    }
+
+    void AddUpwardForce()
+    {
+        RigidBody.AddForce(Vector3.up * JumpSpeed, ForceMode.Acceleration);
+    }
+
+    void AddMovementForces(Quaternion rotation, Vector3 vector, float speed)
+    {
+        RigidBody.AddForce(rotation * vector * speed, ForceMode.Acceleration);
     }
 
     void OnCollisionEnter(Collision collision)
