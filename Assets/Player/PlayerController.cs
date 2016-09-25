@@ -4,13 +4,16 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
-    public float MinTimeBetweenJumps;
     public float Speed;
+    public float MaxVelocitySquared;
     public float JumpSpeed;
     public float JumpInAirMaxTime;
+    public float MinTimeBetweenJumps;
+
     private float FallingTime = 0;
     private bool IsFalling = false;
     private bool IsInJumpMode = false;
+    private bool HasWallJumped = false;
     private float Radius;
     private Rigidbody RigidBody;
     private Vector3[] GroundRaycastVectors, WallRaycastVectors;
@@ -71,7 +74,7 @@ public class PlayerController : MonoBehaviour
         Vector3 fromCamera = transform.position - Camera.transform.position;
         fromCamera.y = 0;
         fromCamera.Normalize();
-        if(fromCamera.magnitude < .5f)
+        if(fromCamera.magnitude < .1f)
         {
             fromCamera = Vector3.forward;
         }
@@ -85,21 +88,21 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.W))
         {
-            AddMovementForces(Quaternion.identity, fromCamera, tickSpeed);
+            AddMovementForce(Quaternion.identity, fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            AddMovementForces(Quaternion.Euler(0, 180, 0), fromCamera, tickSpeed);
+            AddMovementForce(Quaternion.Euler(0, 180, 0), fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.A))
         {
-            AddMovementForces(Quaternion.Euler(0, -90, 0), fromCamera, tickSpeed);
+            AddMovementForce(Quaternion.Euler(0, -90, 0), fromCamera, tickSpeed);
         }
         if (Input.GetKey(KeyCode.D))
         {
-            AddMovementForces(Quaternion.Euler(0, 90, 0), fromCamera, tickSpeed);
+            AddMovementForce(Quaternion.Euler(0, 90, 0), fromCamera, tickSpeed);
         }
-
+        
         JumpAccum += Time.fixedDeltaTime;
         if(IsFalling)
         {
@@ -114,12 +117,33 @@ public class PlayerController : MonoBehaviour
                     }
                     else
                     {
-                        AddUpwardForce();
+                        AddJumpForce();
                     }
                 }
                 else
                 {
                     IsInJumpMode = false;
+                }
+            }
+            else
+            {
+                if (!HasWallJumped && Input.GetKey(KeyCode.Space) && JumpAccum >= MinTimeBetweenJumps)
+                {
+                    Debug.Log("Try wall jump");
+                    foreach (Vector3 vec in WallRaycastVectors)
+                    {
+                        if (Physics.Raycast(transform.position, vec, Radius + .05f))
+                        {
+                            Debug.Log("Wall jump!");
+                            AddJumpForce();
+                            JumpAccum = 0;
+                            FallingTime = 0;
+                            IsFalling = true;
+                            IsInJumpMode = true;
+                            HasWallJumped = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -129,23 +153,24 @@ public class PlayerController : MonoBehaviour
             {
                 if(Physics.Raycast(transform.position, vec, Radius + .05f))
                 {
-                    AddUpwardForce();
+                    AddJumpForce();
                     JumpAccum = 0;
                     FallingTime = 0;
                     IsFalling = true;
                     IsInJumpMode = true;
+                    HasWallJumped = false;
                     break;
                 }
             }
         }
     }
 
-    void AddUpwardForce()
+    void AddJumpForce()
     {
-        RigidBody.AddForce(Vector3.up * JumpSpeed, ForceMode.Acceleration);
+        RigidBody.AddForce(new Vector3(0, JumpSpeed, 0), ForceMode.Acceleration);
     }
 
-    void AddMovementForces(Quaternion rotation, Vector3 vector, float speed)
+    void AddMovementForce(Quaternion rotation, Vector3 vector, float speed)
     {
         RigidBody.AddForce(rotation * vector * speed, ForceMode.Acceleration);
     }
@@ -154,9 +179,10 @@ public class PlayerController : MonoBehaviour
     {
         foreach(ContactPoint contactPoint in collision.contacts)
         {
-            if(contactPoint.normal.y > -.1)
+            if(contactPoint.normal.y > .1)
             {
                 IsFalling = false;
+                Debug.Log("Not falling: " + contactPoint.normal.y);
             }
         }
     }
