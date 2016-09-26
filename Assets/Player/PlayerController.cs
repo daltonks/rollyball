@@ -5,27 +5,24 @@ using System;
 public class PlayerController : MonoBehaviour
 {
     public float Speed;
-    public float MaxVelocitySquared;
     public float JumpSpeed;
     public float TimeBetweenJumps;
-    public float JumpRaycastDistance;
-    public float JumpAfterCollideMax;
+    public float JumpAfterCollideLingerDuration;
 
     private float FallingTime = 0;
     private float JumpAfterCollideCountdown = 0;
     private float WallJumpAfterCollideCountdown = 0;
     private bool IsInJumpMode = false;
     private bool HasWallJumped = false;
-    private float Radius;
     private Rigidbody RigidBody;
     private float TimeBetweenJumpsAccum;
+
     public CameraController Camera { get; set; }
     public MasterController Master { get; set; }
 
     void Start ()
     {
         TimeBetweenJumpsAccum = TimeBetweenJumps;
-        Radius = GetComponent<MeshRenderer>().bounds.extents.x;
         RigidBody = GetComponent<Rigidbody>();
     }
 	
@@ -151,12 +148,12 @@ public class PlayerController : MonoBehaviour
         {
             if (contactPoint.normal.y > .1)
             {
-                JumpAfterCollideCountdown = JumpAfterCollideMax;
+                JumpAfterCollideCountdown = JumpAfterCollideLingerDuration;
                 break;
             }
             else if(contactPoint.normal.y > -.2)
             {
-                WallJumpAfterCollideCountdown = JumpAfterCollideMax;
+                WallJumpAfterCollideCountdown = JumpAfterCollideLingerDuration;
             }
         }
     }
