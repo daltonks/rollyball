@@ -13,10 +13,11 @@ public class PlayerController : MonoBehaviour
     private float JumpAfterCollideCountdown = 0;
     private float WallJumpAfterCollideCountdown = 0;
     private bool IsInJumpMode = false;
+    private bool HasLetGoOfJump = false;
     private bool HasWallJumped = false;
-    private Rigidbody RigidBody;
     private float TimeBetweenJumpsAccum;
 
+    public Rigidbody RigidBody { get; set; }
     public CameraController Camera { get; set; }
     public MasterController Master { get; set; }
 
@@ -78,7 +79,12 @@ public class PlayerController : MonoBehaviour
         
         TimeBetweenJumpsAccum += Time.fixedDeltaTime;
 
-        if(IsInJumpMode)
+        if (!Input.GetKey(KeyCode.Space))
+        {
+            HasLetGoOfJump = true;
+        }
+
+        if (IsInJumpMode)
         {
             FallingTime += Time.fixedDeltaTime;
             if (Input.GetKey(KeyCode.Space))
@@ -106,10 +112,11 @@ public class PlayerController : MonoBehaviour
                 FallingTime = 0;
                 IsInJumpMode = true;
                 HasWallJumped = false;
+                HasLetGoOfJump = false;
                 JumpAfterCollideCountdown = 0;
                 Debug.Log(DateTime.Now + ": Jump!");
             }
-            else if(!HasWallJumped && WallJumpAfterCollideCountdown > 0)
+            else if(HasLetGoOfJump && !HasWallJumped && WallJumpAfterCollideCountdown > 0)
             {
                 AddJumpForce();
                 TimeBetweenJumpsAccum = 0;
