@@ -5,16 +5,6 @@ public class SpeedPadController : MonoBehaviour
 {
     public float Speed;
 
-	void Start ()
-    {
-	
-	}
-	
-	void Update ()
-    {
-	
-	}
-
     void OnTriggerEnter(Collider collider)
     {
         OnTriggerStay(collider);
