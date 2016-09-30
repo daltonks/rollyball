@@ -4,6 +4,9 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
+    public delegate void JumpDelegate(PlayerController player, bool wallJump);
+    public static event JumpDelegate JumpEvent;
+
     public float Speed;
     public float JumpSpeed;
     public float TimeBetweenJumps;
@@ -17,7 +20,7 @@ public class PlayerController : MonoBehaviour
     private bool HasWallJumped = false;
     private float TimeBetweenJumpsAccum;
 
-    public Rigidbody RigidBody { get; set; }
+    public Rigidbody RigidBody { get; private set; }
     public CameraController Camera { get; set; }
     public MasterController Master { get; set; }
 
@@ -114,6 +117,8 @@ public class PlayerController : MonoBehaviour
                 HasWallJumped = false;
                 HasLetGoOfJump = false;
                 JumpAfterCollideCountdown = 0;
+                if (JumpEvent != null)
+                    JumpEvent.Invoke(this, false);
                 Debug.Log(DateTime.Now + ": Jump!");
             }
             else if(HasLetGoOfJump && !HasWallJumped && WallJumpAfterCollideCountdown > 0)
@@ -124,6 +129,8 @@ public class PlayerController : MonoBehaviour
                 IsInJumpMode = true;
                 HasWallJumped = true;
                 WallJumpAfterCollideCountdown = 0;
+                if (JumpEvent != null)
+                    JumpEvent.Invoke(this, true);
                 Debug.Log(DateTime.Now + ": Wall Jump!");
             }
         }
