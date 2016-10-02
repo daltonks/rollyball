@@ -7,7 +7,6 @@ public class CameraController : MonoBehaviour
     private Quaternion StartingRot;
     public float CameraSpeed;
     public float DistanceToPlayer, LookOffsetY;
-    public PlayerController Player { get; set; }
     private float RotX, RotY;
 
     void Start()
@@ -47,9 +46,9 @@ public class CameraController : MonoBehaviour
             transform.rotation = Quaternion.Euler(RotX, RotY, 0.0f);
         }
 
-        Vector3 newPosition = Player.transform.position + transform.rotation * Vector3.back * DistanceToPlayer + Vector3.up * LookOffsetY;
+        Vector3 newPosition = PlayerController.Instance.transform.position + transform.rotation * Vector3.back * DistanceToPlayer + Vector3.up * LookOffsetY;
         RaycastHit hit;
-        if(Physics.Linecast(Player.transform.position, newPosition, out hit))
+        if(Physics.Linecast(PlayerController.Instance.transform.position, newPosition, out hit))
         {
             newPosition = hit.point;
         }

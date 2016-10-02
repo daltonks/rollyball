@@ -4,6 +4,7 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance { get; private set; }
     public delegate void JumpDelegate(PlayerController player, bool wallJump);
     public static event JumpDelegate JumpEvent;
 
@@ -22,10 +23,10 @@ public class PlayerController : MonoBehaviour
 
     public Rigidbody RigidBody { get; private set; }
     public CameraController Camera { get; set; }
-    public MasterController Master { get; set; }
 
     void Start ()
     {
+        Instance = this;
         TimeBetweenJumpsAccum = TimeBetweenJumps;
         RigidBody = GetComponent<Rigidbody>();
     }
@@ -38,12 +39,12 @@ public class PlayerController : MonoBehaviour
         JumpAfterCollideCountdown -= Time.fixedDeltaTime;
         WallJumpAfterCollideCountdown -= Time.fixedDeltaTime;
 
-        if (transform.position.y <= Master.YDeath)
+        if (transform.position.y <= MasterController.Instance.YDeath)
         {
             RigidBody.velocity = Vector3.zero;
             RigidBody.angularVelocity = Vector3.zero;
-            transform.position = Master.transform.position;
-            transform.rotation = Master.transform.rotation;
+            transform.position = MasterController.Instance.SpawnPoint.transform.position;
+            transform.rotation = MasterController.Instance.SpawnPoint.transform.rotation;
             Camera.Reset();
             return;
         }
@@ -163,7 +164,6 @@ public class PlayerController : MonoBehaviour
             if (contactPoint.normal.y > .1)
             {
                 JumpAfterCollideCountdown = JumpAfterCollideLingerDuration;
-                break;
             }
             else if(contactPoint.normal.y > -.2)
             {
