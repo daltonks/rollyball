@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     private float JumpAfterCollideCountdown = 0;
     private float WallJumpAfterCollideCountdown = 0;
     private bool IsInJumpMode = false;
-    private bool HasLetGoOfJump = false;
+    private bool HasLetGoOfJump = true;
     private bool HasWallJumped = false;
     private float TimeBetweenJumpsAccum;
 
@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
         
         TimeBetweenJumpsAccum += Time.fixedDeltaTime;
 
-        if (!Input.GetKey(KeyCode.Space))
+        if (Input.GetKeyUp(KeyCode.Space))
         {
             HasLetGoOfJump = true;
         }
@@ -107,32 +107,34 @@ public class PlayerController : MonoBehaviour
                 IsInJumpMode = false;
             }
         }
-        else if(Input.GetKey(KeyCode.Space) && TimeBetweenJumpsAccum >= TimeBetweenJumps)
+        else if(HasLetGoOfJump && Input.GetKey(KeyCode.Space) && TimeBetweenJumpsAccum >= TimeBetweenJumps)
         {
+            bool jumped = false;
             if (JumpAfterCollideCountdown > 0)
             {
-                AddJumpForce();
-                TimeBetweenJumpsAccum = 0;
-                FallingTime = 0;
-                IsInJumpMode = true;
                 HasWallJumped = false;
-                HasLetGoOfJump = false;
                 JumpAfterCollideCountdown = 0;
                 if (JumpEvent != null)
                     JumpEvent.Invoke(this, false);
+                jumped = true;
                 Debug.Log(DateTime.Now + ": Jump!");
             }
-            else if(HasLetGoOfJump && !HasWallJumped && WallJumpAfterCollideCountdown > 0)
+            else if (!HasWallJumped && WallJumpAfterCollideCountdown > 0)
             {
-                AddJumpForce();
-                TimeBetweenJumpsAccum = 0;
-                FallingTime = 0;
-                IsInJumpMode = true;
                 HasWallJumped = true;
                 WallJumpAfterCollideCountdown = 0;
                 if (JumpEvent != null)
                     JumpEvent.Invoke(this, true);
+                jumped = true;
                 Debug.Log(DateTime.Now + ": Wall Jump!");
+            }
+            if(jumped)
+            {
+                AddJumpForce();
+                TimeBetweenJumpsAccum = 0;
+                FallingTime = 0;
+                IsInJumpMode = true;
+                HasLetGoOfJump = false;
             }
         }
     }
